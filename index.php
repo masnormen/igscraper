@@ -2,8 +2,14 @@
 require './simple-cache.php';
 header('Content-type: application/json; charset=utf-8');
 
+//disable showing HTML-related errors
+error_reporting(0);
+
 if (!empty($_GET['username'])) {
 	$user = $_GET['username'];
+	
+	//get max 12 post
+	$postCount = empty($_GET['posts']) ? 12 : $_GET['posts'];
 	
 	$cacheFolder = 'ig-cache';
 	if (!file_exists($cacheFolder)) {
@@ -35,9 +41,10 @@ if (!empty($_GET['username'])) {
 		if (!empty($posts)) {
 			$postEntries = array();
 			
-			//limit to only 9 post
-			$limit = count($posts);
-			if (count($posts) > 9) $limit = 9;
+			//limit posts
+			$limit = count($posts) < $postCount
+				? count($posts)
+				: $postCount;
 			
 			//fetch from newest post
 			for ($i = 0; $i < $limit; $i++) {
