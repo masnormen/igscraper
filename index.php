@@ -38,9 +38,8 @@ if (!empty($_GET['username'])) {
 	//fetching post and put into array
 	$posts = $json['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges'];
 	if (!is_null($followers)) {
+		$postEntries = array();
 		if (!empty($posts)) {
-			$postEntries = array();
-			
 			//limit posts
 			$limit = count($posts) < $postCount
 				? count($posts)
@@ -48,29 +47,33 @@ if (!empty($_GET['username'])) {
 			
 			//fetch from newest post
 			for ($i = 0; $i < $limit; $i++) {
-				$post = $posts[$i];
-				$caption = trim(($post['node']['edge_media_to_caption']['edges'][0]['node']['text']));
-				$title = strtok($caption, "\n");
-				$thumbnail = $post['node']['thumbnail_resources'][2]['src'];
-				$date = date('l, j F Y', $post['node']['taken_at_timestamp']);
-				$link = 'https://www.instagram.com/p/' . $post['node']['shortcode'] . "/";
-				array_push($postEntries, array(
-					'title' => $title,
-					'link' => $link,
-					'date' => $date,
-					'thumbnail' => $thumbnail,
-					'caption' => $caption
-				));
+				try {
+					$post = $posts[$i];
+					$caption = trim(($post['node']['edge_media_to_caption']['edges'][0]['node']['text']));
+					$title = strtok($caption, "\n");
+					$thumbnail = $post['node']['thumbnail_resources'][2]['src'];
+					$date = date('l, j F Y', $post['node']['taken_at_timestamp']);
+					$link = 'https://www.instagram.com/p/' . $post['node']['shortcode'] . "/";
+					array_push($postEntries, array(
+						'title' => $title,
+						'link' => $link,
+						'date' => $date,
+						'thumbnail' => $thumbnail,
+						'caption' => $caption
+					));
+				} catch (Exception $e) {
+					$postEntries = null;
+				}
 			}
-			http_response_code(200);
-			echo json_encode(array(
-				'status' => 1,
-				'followers' => $followers,
-				'following' => $following,
-				'totalPost' => $totalPost,
-				'posts' => $postEntries
-			));
-		}
+		} else $postEntries = null;
+		http_response_code(200);
+		echo json_encode(array(
+			'status' => 1,
+			'followers' => $followers,
+			'following' => $following,
+			'totalPost' => $totalPost,
+			'posts' => $postEntries
+		));
 	} else {
 		http_response_code(404);
 		echo json_encode(array(

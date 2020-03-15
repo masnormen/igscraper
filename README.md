@@ -24,7 +24,7 @@ instagram-php-scraper is a simple file written in PHP that scrapes and show in a
     followers
     following
     totalPost
-    post [
+    post [ //returns null if account is private
         title
         link
         date
